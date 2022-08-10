@@ -10,6 +10,7 @@ ENetHost* server = nullptr;
 ENetHost* client = nullptr;
 string username;
 bool clientConnected = false;
+bool shouldEndThread = false;
 
 
 void CreateServer();
@@ -203,7 +204,7 @@ void ReceivePacket(ENetPacket* packet)
 
 void PollForServerEvents()
 {
-    while (1)
+    while (!shouldEndThread)
     {
         ENetEvent event;
 
@@ -244,7 +245,7 @@ void PollForServerEvents()
 
 void PollForClientEvents()
 {
-    while (1)
+    while (!shouldEndThread)
     {
         ENetEvent event;
         /* Wait up to 1000 milliseconds for an event. */
@@ -254,6 +255,7 @@ void PollForClientEvents()
             {
             case ENET_EVENT_TYPE_RECEIVE:
                 ReceivePacket(event.packet);
+                break;
             }
         }
     }
@@ -265,9 +267,15 @@ void PollForInput(ENetHost* host)
 {
     string message;
 
-    while (1)
+    while (!shouldEndThread)
     {
         getline(std::cin >> std::ws, message); // accept all input even with spaces
+
+        if (message == "q")
+        {
+            shouldEndThread = true;
+            exit;
+        }
 
         message = username + ": " + message; // concatenate username
 
